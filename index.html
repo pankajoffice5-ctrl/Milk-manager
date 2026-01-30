@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk Ledger | Member PDF</title>
+    <title>Milk Ledger | PDF Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -11,9 +11,9 @@
 
     <header class="bg-blue-600 p-6 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black italic">MilkLog</h1>
+            <h1 class="text-xl font-black">MilkLog Fix</h1>
             <div class="flex gap-2">
-                <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Daily Logs</button>
+                <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Logs</button>
                 <button onclick="switchTab('members')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Members</button>
             </div>
         </div>
@@ -23,7 +23,7 @@
         <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200">
             <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Add Member</h2>
             <form onsubmit="addMember(event)" class="flex gap-2">
-                <input type="text" id="member-name" placeholder="Full Name" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none text-sm" required>
+                <input type="text" id="member-name" placeholder="Name" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none text-sm" required>
                 <button type="submit" class="bg-blue-600 text-white px-6 rounded-xl font-bold">+</button>
             </form>
         </div>
@@ -31,64 +31,59 @@
     </main>
 
     <main id="tab-logs" class="max-w-md mx-auto p-4 space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-            <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">This Month</p>
-                <h3 id="stat-current" class="text-xl font-black text-blue-600">0 L</h3>
-            </div>
-            <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Last Month</p>
-                <h3 id="stat-last" class="text-xl font-black text-slate-700">0 L</h3>
-            </div>
-        </div>
-
         <div class="bg-white rounded-3xl p-5 shadow-lg border border-slate-200">
             <form onsubmit="saveEntry(event)" class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <select id="log-member" class="bg-slate-100 p-3 rounded-xl text-sm outline-none font-bold" required>
-                        <option value="">Select Member</option>
+                        <option value="">Member</option>
                     </select>
                     <input type="date" id="log-date" class="bg-slate-100 p-3 rounded-xl text-sm outline-none">
                 </div>
-                <input type="number" id="log-qty" step="0.1" placeholder="Quantity (Liters)" class="w-full bg-slate-100 p-4 rounded-xl text-lg font-black outline-none text-center" required>
-                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-black transition-all">Save Daily Entry</button>
+                <input type="number" id="log-qty" step="0.1" placeholder="Quantity (Liters)" class="w-full bg-slate-100 p-4 rounded-xl text-xl font-black outline-none text-center" required>
+                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl">Save Entry</button>
             </form>
         </div>
 
-        <div class="bg-blue-50 rounded-3xl p-5 border border-blue-100 space-y-3">
-            <p class="text-[10px] font-bold text-blue-600 uppercase text-center">Export Member Report</p>
+        <div class="bg-blue-50 rounded-3xl p-5 border border-blue-200 space-y-3">
+            <p class="text-[10px] font-bold text-blue-600 uppercase text-center">Export Specific Member PDF</p>
             <div class="flex gap-2">
                 <select id="filter-member" class="flex-1 bg-white p-3 rounded-xl text-sm outline-none border border-blue-200">
                     <option value="">All Members</option>
                 </select>
-                <button onclick="exportToPDF()" class="bg-emerald-600 text-white px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
-                    PDF
-                </button>
+                <button onclick="exportToPDF()" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold">Download PDF</button>
             </div>
         </div>
 
         <div id="logs-display" class="space-y-2"></div>
     </main>
 
-    <div id="pdf-content" class="hidden p-10 bg-white">
-        <div class="border-b-2 border-blue-600 pb-4 mb-6">
-            <h1 class="text-3xl font-black text-blue-600">Milk Delivery Report</h1>
-            <p id="pdf-subtitle" class="text-slate-500 font-bold uppercase tracking-wider"></p>
+    <div id="pdf-container" style="padding: 40px; background: white; font-family: Arial, sans-serif; display: none;">
+        <div style="border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 20px;">
+            <h1 style="color: #2563eb; font-size: 28px; margin: 0;">Milk Supply Report</h1>
+            <p id="pdf-report-for" style="font-weight: bold; color: #666; text-transform: uppercase; margin-top: 5px;"></p>
         </div>
-        <div id="pdf-table-area"></div>
-        <div class="mt-8 pt-4 border-t border-slate-200 text-right">
-            <h2 id="pdf-total" class="text-2xl font-black"></h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                    <th style="padding: 12px; border: 1px solid #cbd5e1;">Date</th>
+                    <th style="padding: 12px; border: 1px solid #cbd5e1;">Member Name</th>
+                    <th style="padding: 12px; border: 1px solid #cbd5e1;">Quantity (Ltrs)</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-table-body">
+                </tbody>
+        </table>
+        <div style="margin-top: 20px; text-align: right;">
+            <h2 id="pdf-grand-total" style="font-size: 20px; color: #000;"></h2>
         </div>
     </div>
 
     <script>
-        // --- Navigation ---
         function switchTab(tab) {
             document.getElementById('tab-members').classList.toggle('hidden', tab !== 'members');
             document.getElementById('tab-logs').classList.toggle('hidden', tab !== 'logs');
         }
 
-        // --- Member Management ---
         function addMember(e) {
             e.preventDefault();
             const name = document.getElementById('member-name').value;
@@ -101,30 +96,24 @@
 
         function renderMembers() {
             const members = JSON.parse(localStorage.getItem('milk_members') || '[]');
-            const list = document.getElementById('members-list');
-            const logSelect = document.getElementById('log-member');
-            const filterSelect = document.getElementById('filter-member');
-            
-            list.innerHTML = members.map(m => `
-                <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
+            document.getElementById('members-list').innerHTML = members.map(m => `
+                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-slate-100 shadow-sm">
                     <span class="font-bold text-slate-700">${m.name}</span>
-                    <button onclick="deleteMember(${m.id})" class="text-red-400 font-bold text-xs">DELETE</button>
+                    <button onclick="deleteMember(${m.id})" class="text-red-500 text-xs font-bold">REMOVE</button>
                 </div>
             `).join('');
 
             const options = members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
-            logSelect.innerHTML = '<option value="">Select Member</option>' + options;
-            filterSelect.innerHTML = '<option value="">All Members</option>' + options;
+            document.getElementById('log-member').innerHTML = '<option value="">Member</option>' + options;
+            document.getElementById('filter-member').innerHTML = '<option value="">All Members</option>' + options;
         }
 
         function deleteMember(id) {
-            if(!confirm("Remove member? Data in logs will remain.")) return;
             const members = JSON.parse(localStorage.getItem('milk_members') || '[]');
             localStorage.setItem('milk_members', JSON.stringify(members.filter(m => m.id !== id)));
             renderMembers();
         }
 
-        // --- Entry Management ---
         function saveEntry(e) {
             e.preventDefault();
             const entry = {
@@ -142,26 +131,15 @@
 
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('milk_logs') || '[]');
-            const now = new Date();
-            let curTotal = 0, lastTotal = 0;
-
-            document.getElementById('logs-display').innerHTML = logs.map(l => {
-                const logDate = new Date(l.date);
-                if(logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear()) curTotal += l.qty;
-                if(logDate.getMonth() === now.getMonth() - 1 && logDate.getFullYear() === now.getFullYear()) lastTotal += l.qty;
-
-                return `
+            document.getElementById('logs-display').innerHTML = logs.map(l => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                     <div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase">${l.date} • ${l.member}</p>
-                        <p class="text-lg font-black text-slate-800">${l.qty} <span class="text-xs font-normal">Liters</span></p>
+                        <p class="text-lg font-black text-slate-800">${l.qty} Liters</p>
                     </div>
                     <button onclick="deleteLog(${l.id})" class="text-slate-300">✕</button>
-                </div>`;
-            }).join('');
-
-            document.getElementById('stat-current').innerText = curTotal.toFixed(1) + " L";
-            document.getElementById('stat-last').innerText = lastTotal.toFixed(1) + " L";
+                </div>
+            `).join('');
         }
 
         function deleteLog(id) {
@@ -170,50 +148,53 @@
             renderLogs();
         }
 
-        // --- Member-Specific PDF Export ---
+        // --- FIXED PDF LOGIC ---
         function exportToPDF() {
             const selectedMember = document.getElementById('filter-member').value;
             let logs = JSON.parse(localStorage.getItem('milk_logs') || '[]');
             
-            // Filter by member if one is selected
+            // 1. Filter logs for selected member
             if (selectedMember) {
                 logs = logs.filter(l => l.member === selectedMember);
             }
 
-            const container = document.getElementById('pdf-table-area');
-            document.getElementById('pdf-subtitle').innerText = selectedMember ? `Member: ${selectedMember}` : "Complete Sales Report";
-            
-            let totalQty = 0;
-            let tableHtml = `<table style="width:100%; border-collapse: collapse; margin-top: 20px; font-family: sans-serif;">
-                <thead>
-                    <tr style="background: #2563eb; color: white; text-align: left;">
-                        <th style="padding: 12px; border: 1px solid #ddd;">Date</th>
-                        <th style="padding: 12px; border: 1px solid #ddd;">Member Name</th>
-                        <th style="padding: 12px; border: 1px solid #ddd;">Quantity (Liters)</th>
+            // 2. Sort by date
+            logs.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            // 3. Populate PDF table
+            const tableBody = document.getElementById('pdf-table-body');
+            let totalLiters = 0;
+            let rowsHtml = '';
+
+            logs.forEach(l => {
+                totalLiters += l.qty;
+                rowsHtml += `
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${l.date}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${l.member}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">${l.qty} L</td>
                     </tr>
-                </thead>
-                <tbody>`;
-            
-            logs.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(l => {
-                totalQty += l.qty;
-                tableHtml += `<tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${l.date}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${l.member}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${l.qty} L</td>
-                </tr>`;
+                `;
             });
 
-            tableHtml += `</tbody></table>`;
-            container.innerHTML = tableHtml;
-            document.getElementById('pdf-total').innerText = `Grand Total: ${totalQty.toFixed(1)} Liters`;
+            tableBody.innerHTML = rowsHtml;
+            document.getElementById('pdf-report-for').innerText = selectedMember ? `MEMBER: ${selectedMember}` : "FULL CUSTOMER REPORT";
+            document.getElementById('pdf-grand-total').innerText = `GRAND TOTAL: ${totalLiters.toFixed(1)} Liters`;
 
-            const element = document.getElementById('pdf-content');
-            element.classList.remove('hidden');
-            
-            const fileName = selectedMember ? `Milk_Report_${selectedMember}.pdf` : 'Full_Milk_Report.pdf';
-            
-            html2pdf().from(element).save(fileName).then(() => {
-                element.classList.add('hidden');
+            // 4. Generate PDF
+            const element = document.getElementById('pdf-container');
+            element.style.display = 'block'; // Temporarily show for capture
+
+            const opt = {
+                margin: 0.5,
+                filename: selectedMember ? `Milk_${selectedMember}.pdf` : 'Milk_Report_Full.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none'; // Hide again
             });
         }
 
