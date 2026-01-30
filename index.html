@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk Ledger | Pav Management</title>
+    <title>Milk Ledger | dd-mm-yyyy Format</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -11,7 +11,7 @@
 
     <header class="bg-blue-600 p-6 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black">MilkLog/Pav</h1>
+            <h1 class="text-xl font-black uppercase tracking-tighter">MilkLog/Pav</h1>
             <div class="flex gap-2">
                 <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Logs</button>
                 <button onclick="switchTab('members')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Members</button>
@@ -22,7 +22,7 @@
     <main id="tab-members" class="hidden max-w-md mx-auto p-4">
         <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 mb-4">
             <form onsubmit="addMember(event)" class="flex gap-2">
-                <input type="text" id="member-name" placeholder="Name" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none text-sm" required>
+                <input type="text" id="member-name" placeholder="Member Name" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none text-sm" required>
                 <button type="submit" class="bg-blue-600 text-white px-6 rounded-xl font-bold">+</button>
             </form>
         </div>
@@ -44,7 +44,7 @@
         </div>
 
         <div class="bg-emerald-50 rounded-3xl p-5 border border-emerald-200 space-y-3">
-            <p class="text-[10px] font-bold text-emerald-700 uppercase text-center">Generate Member Invoice</p>
+            <p class="text-[10px] font-bold text-emerald-700 uppercase text-center">Export Invoice</p>
             <div class="flex gap-2">
                 <select id="filter-member" class="flex-1 bg-white p-3 rounded-xl text-sm outline-none border border-emerald-200">
                     <option value="">Select Member</option>
@@ -56,23 +56,23 @@
         <div id="logs-display" class="space-y-2"></div>
     </main>
 
-    <div id="pdf-container" style="display: none; padding: 20px; background: white; color: black; width: 100%; font-family: sans-serif;">
+    <div id="pdf-container" style="display: none; padding: 25px; background: white; color: black; width: 100%; font-family: sans-serif;">
         <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
                 <h1 style="margin: 0; font-size: 20px; color: #1e40af;">MILK SUPPLY INVOICE</h1>
                 <p id="pdf-member-name" style="margin: 5px 0 0 0; font-weight: bold; font-size: 14px;"></p>
             </div>
             <div style="text-align: right;">
-                <p id="pdf-date-range" style="margin: 0; font-size: 10px; color: #555;"></p>
+                <p id="pdf-gen-date" style="margin: 0; font-size: 10px; color: #555;"></p>
             </div>
         </div>
         
         <table style="width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed;">
             <thead>
                 <tr style="background: #f1f5f9; border: 1px solid #000;">
-                    <th style="padding: 6px; border: 1px solid #000; text-align: left; width: 30%;">Date</th>
+                    <th style="padding: 6px; border: 1px solid #000; text-align: left; width: 30%;">Date (dd-mm-yyyy)</th>
                     <th style="padding: 6px; border: 1px solid #000; text-align: center; width: 25%;">Qty (Pav)</th>
-                    <th style="padding: 6px; border: 1px solid #000; text-align: right; width: 20%;">Rate/Pav</th>
+                    <th style="padding: 6px; border: 1px solid #000; text-align: right; width: 20%;">Rate</th>
                     <th style="padding: 6px; border: 1px solid #000; text-align: right; width: 25%;">Amount</th>
                 </tr>
             </thead>
@@ -86,10 +86,15 @@
                 </tr>
             </tfoot>
         </table>
-        <p style="font-size: 9px; margin-top: 15px; color: #666; font-style: italic;">Measured in Pav units.</p>
     </div>
 
     <script>
+        // Helper to convert yyyy-mm-dd to dd-mm-yyyy
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}-${month}-${year}`;
+        }
+
         function switchTab(tab) {
             document.getElementById('tab-members').classList.toggle('hidden', tab !== 'members');
             document.getElementById('tab-logs').classList.toggle('hidden', tab !== 'logs');
@@ -147,7 +152,7 @@
             document.getElementById('logs-display').innerHTML = logs.map(l => `
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                     <div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">${l.date} • ${l.member}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">${formatDate(l.date)} • ${l.member}</p>
                         <p class="text-lg font-black text-slate-800">${l.qty} Pav</p>
                     </div>
                     <button onclick="deleteLog(${l.id})" class="text-slate-200">✕</button>
@@ -165,11 +170,13 @@
             const selectedMember = document.getElementById('filter-member').value;
             if (!selectedMember) { alert("Select a member!"); return; }
 
-            const rate = prompt("Enter Rate per Pav (default: 15)", "15");
+            const rate = prompt("Enter Rate per Pav", "15");
             if (rate === null) return;
 
             let logs = JSON.parse(localStorage.getItem('milk_logs') || '[]')
                         .filter(l => l.member === selectedMember);
+            
+            // Sort by date (chronological)
             logs.sort((a,b) => new Date(a.date) - new Date(b.date));
 
             const tableBody = document.getElementById('pdf-table-body');
@@ -181,7 +188,7 @@
                 totalQty += l.qty;
                 rowsHtml += `
                     <tr>
-                        <td style="padding: 5px; border: 1px solid #000;">${l.date}</td>
+                        <td style="padding: 5px; border: 1px solid #000;">${formatDate(l.date)}</td>
                         <td style="padding: 5px; border: 1px solid #000; text-align: center;">${l.qty}</td>
                         <td style="padding: 5px; border: 1px solid #000; text-align: right;">${rate}</td>
                         <td style="padding: 5px; border: 1px solid #000; text-align: right;">${amount.toFixed(2)}</td>
@@ -193,14 +200,16 @@
             document.getElementById('pdf-member-name').innerText = "CUSTOMER: " + selectedMember;
             document.getElementById('pdf-total-qty').innerText = totalQty.toFixed(1) + " Pav";
             document.getElementById('pdf-total-amount').innerText = "₹" + (totalQty * rate).toFixed(2);
-            document.getElementById('pdf-date-range').innerText = "Date: " + new Date().toLocaleDateString();
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('pdf-gen-date').innerText = "Generated: " + formatDate(today);
 
             const element = document.getElementById('pdf-container');
             element.style.display = 'block';
 
             const opt = {
-                margin: [0.5, 0.5],
-                filename: `${selectedMember}_Pav_Invoice.pdf`,
+                margin: [0.4, 0.4],
+                filename: `${selectedMember}_Report.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 3 },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
