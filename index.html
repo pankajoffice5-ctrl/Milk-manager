@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk Ledger | PDF Fixed</title>
+    <title>Milk Ledger | Smart PDF</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -11,7 +11,7 @@
 
     <header class="bg-blue-600 p-6 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black">MilkLog Fix</h1>
+            <h1 class="text-xl font-black">MilkLog Pro</h1>
             <div class="flex gap-2">
                 <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Logs</button>
                 <button onclick="switchTab('members')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Members</button>
@@ -19,9 +19,8 @@
         </div>
     </header>
 
-    <main id="tab-members" class="hidden max-w-md mx-auto p-4 space-y-4">
-        <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200">
-            <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Add Member</h2>
+    <main id="tab-members" class="hidden max-w-md mx-auto p-4">
+        <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 mb-4">
             <form onsubmit="addMember(event)" class="flex gap-2">
                 <input type="text" id="member-name" placeholder="Name" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none text-sm" required>
                 <button type="submit" class="bg-blue-600 text-white px-6 rounded-xl font-bold">+</button>
@@ -37,18 +36,18 @@
                     <select id="log-member" class="bg-slate-100 p-3 rounded-xl text-sm outline-none font-bold" required>
                         <option value="">Member</option>
                     </select>
-                    <input type="date" id="log-date" class="bg-slate-100 p-3 rounded-xl text-sm outline-none">
+                    <input type="date" id="log-date" class="bg-slate-100 p-3 rounded-xl text-sm outline-none" required>
                 </div>
-                <input type="number" id="log-qty" step="0.1" placeholder="Quantity (Liters)" class="w-full bg-slate-100 p-4 rounded-xl text-xl font-black outline-none text-center" required>
+                <input type="number" id="log-qty" step="0.1" placeholder="Quantity (Ltrs)" class="w-full bg-slate-100 p-4 rounded-xl text-xl font-black outline-none text-center" required>
                 <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl">Save Entry</button>
             </form>
         </div>
 
-        <div class="bg-blue-50 rounded-3xl p-5 border border-blue-200 space-y-3">
-            <p class="text-[10px] font-bold text-blue-600 uppercase text-center">Export Specific Member PDF</p>
+        <div class="bg-emerald-50 rounded-3xl p-5 border border-emerald-200 space-y-3">
+            <p class="text-[10px] font-bold text-emerald-700 uppercase text-center">Generate Member Invoice (A4)</p>
             <div class="flex gap-2">
-                <select id="filter-member" class="flex-1 bg-white p-3 rounded-xl text-sm outline-none border border-blue-200">
-                    <option value="">All Members</option>
+                <select id="filter-member" class="flex-1 bg-white p-3 rounded-xl text-sm outline-none border border-emerald-200">
+                    <option value="">Select Member</option>
                 </select>
                 <button onclick="exportToPDF()" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold">Download PDF</button>
             </div>
@@ -57,25 +56,37 @@
         <div id="logs-display" class="space-y-2"></div>
     </main>
 
-    <div id="pdf-container" style="padding: 40px; background: white; font-family: Arial, sans-serif; display: none;">
-        <div style="border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 20px;">
-            <h1 style="color: #2563eb; font-size: 28px; margin: 0;">Milk Supply Report</h1>
-            <p id="pdf-report-for" style="font-weight: bold; color: #666; text-transform: uppercase; margin-top: 5px;"></p>
+    <div id="pdf-container" style="display: none; padding: 30px; background: white; width: 790px; color: black;">
+        <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="margin: 0; font-size: 24px;">MILK SUPPLY INVOICE</h1>
+                <p id="pdf-member-name" style="margin: 5px 0 0 0; font-weight: bold; font-size: 16px;"></p>
+            </div>
+            <div style="text-align: right;">
+                <p id="pdf-date-range" style="margin: 0; font-size: 12px; color: #555;"></p>
+            </div>
         </div>
-        <table style="width: 100%; border-collapse: collapse;">
+        
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
             <thead>
-                <tr style="background: #f1f5f9; text-align: left;">
-                    <th style="padding: 12px; border: 1px solid #cbd5e1;">Date</th>
-                    <th style="padding: 12px; border: 1px solid #cbd5e1;">Member Name</th>
-                    <th style="padding: 12px; border: 1px solid #cbd5e1;">Quantity (Ltrs)</th>
+                <tr style="background: #f0f0f0; border: 1px solid #000;">
+                    <th style="padding: 8px; border: 1px solid #000; text-align: left;">Date</th>
+                    <th style="padding: 8px; border: 1px solid #000; text-align: center;">Quantity (Ltrs)</th>
+                    <th style="padding: 8px; border: 1px solid #000; text-align: right;">Rate (₹)</th>
+                    <th style="padding: 8px; border: 1px solid #000; text-align: right;">Amount (₹)</th>
                 </tr>
             </thead>
-            <tbody id="pdf-table-body">
-                </tbody>
+            <tbody id="pdf-table-body"></tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background: #fafafa;">
+                    <td style="padding: 10px; border: 1px solid #000;">TOTALS</td>
+                    <td id="pdf-total-qty" style="padding: 10px; border: 1px solid #000; text-align: center;"></td>
+                    <td style="padding: 10px; border: 1px solid #000;"></td>
+                    <td id="pdf-total-amount" style="padding: 10px; border: 1px solid #000; text-align: right; font-size: 16px;"></td>
+                </tr>
+            </tfoot>
         </table>
-        <div style="margin-top: 20px; text-align: right;">
-            <h2 id="pdf-grand-total" style="font-size: 20px; color: #000;"></h2>
-        </div>
+        <p style="font-size: 10px; margin-top: 20px; color: #888; font-style: italic;">Computer generated invoice - MilkLog Pro</p>
     </div>
 
     <script>
@@ -97,15 +108,14 @@
         function renderMembers() {
             const members = JSON.parse(localStorage.getItem('milk_members') || '[]');
             document.getElementById('members-list').innerHTML = members.map(m => `
-                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-slate-100 shadow-sm">
+                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-slate-100">
                     <span class="font-bold text-slate-700">${m.name}</span>
-                    <button onclick="deleteMember(${m.id})" class="text-red-500 text-xs font-bold">REMOVE</button>
+                    <button onclick="deleteMember(${m.id})" class="text-red-500 font-bold text-xs">REMOVE</button>
                 </div>
             `).join('');
-
             const options = members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
             document.getElementById('log-member').innerHTML = '<option value="">Member</option>' + options;
-            document.getElementById('filter-member').innerHTML = '<option value="">All Members</option>' + options;
+            document.getElementById('filter-member').innerHTML = '<option value="">Select Member</option>' + options;
         }
 
         function deleteMember(id) {
@@ -116,14 +126,20 @@
 
         function saveEntry(e) {
             e.preventDefault();
-            const entry = {
-                id: Date.now(),
-                member: document.getElementById('log-member').value,
-                date: document.getElementById('log-date').value,
-                qty: parseFloat(document.getElementById('log-qty').value)
-            };
+            const member = document.getElementById('log-member').value;
+            const date = document.getElementById('log-date').value;
+            const qty = parseFloat(document.getElementById('log-qty').value);
+            
             const logs = JSON.parse(localStorage.getItem('milk_logs') || '[]');
-            logs.unshift(entry);
+            
+            // DUPLICATE CHECK
+            const isDuplicate = logs.some(l => l.member === member && l.date === date);
+            if (isDuplicate) {
+                alert("ERROR: Entry for this member on this date already exists!");
+                return;
+            }
+
+            logs.unshift({ id: Date.now(), member, date, qty });
             localStorage.setItem('milk_logs', JSON.stringify(logs));
             e.target.reset();
             initApp();
@@ -135,9 +151,9 @@
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                     <div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase">${l.date} • ${l.member}</p>
-                        <p class="text-lg font-black text-slate-800">${l.qty} Liters</p>
+                        <p class="text-lg font-black text-slate-800">${l.qty} L</p>
                     </div>
-                    <button onclick="deleteLog(${l.id})" class="text-slate-300">✕</button>
+                    <button onclick="deleteLog(${l.id})" class="text-slate-200">✕</button>
                 </div>
             `).join('');
         }
@@ -148,53 +164,54 @@
             renderLogs();
         }
 
-        // --- FIXED PDF LOGIC ---
         function exportToPDF() {
             const selectedMember = document.getElementById('filter-member').value;
-            let logs = JSON.parse(localStorage.getItem('milk_logs') || '[]');
-            
-            // 1. Filter logs for selected member
-            if (selectedMember) {
-                logs = logs.filter(l => l.member === selectedMember);
-            }
+            if (!selectedMember) { alert("Please select a member first!"); return; }
 
-            // 2. Sort by date
+            const rate = prompt("Enter Rate per Liter for " + selectedMember, "15");
+            if (rate === null) return; 
+
+            let logs = JSON.parse(localStorage.getItem('milk_logs') || '[]')
+                        .filter(l => l.member === selectedMember);
+            
             logs.sort((a,b) => new Date(a.date) - new Date(b.date));
 
-            // 3. Populate PDF table
             const tableBody = document.getElementById('pdf-table-body');
-            let totalLiters = 0;
+            let totalLtr = 0;
             let rowsHtml = '';
 
             logs.forEach(l => {
-                totalLiters += l.qty;
+                const amount = l.qty * parseFloat(rate);
+                totalLtr += l.qty;
                 rowsHtml += `
                     <tr>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${l.date}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${l.member}</td>
-                        <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold;">${l.qty} L</td>
+                        <td style="padding: 6px; border: 1px solid #000;">${l.date}</td>
+                        <td style="padding: 6px; border: 1px solid #000; text-align: center;">${l.qty}</td>
+                        <td style="padding: 6px; border: 1px solid #000; text-align: right;">${rate}</td>
+                        <td style="padding: 6px; border: 1px solid #000; text-align: right;">${amount.toFixed(2)}</td>
                     </tr>
                 `;
             });
 
             tableBody.innerHTML = rowsHtml;
-            document.getElementById('pdf-report-for').innerText = selectedMember ? `MEMBER: ${selectedMember}` : "FULL CUSTOMER REPORT";
-            document.getElementById('pdf-grand-total').innerText = `GRAND TOTAL: ${totalLiters.toFixed(1)} Liters`;
+            document.getElementById('pdf-member-name').innerText = selectedMember;
+            document.getElementById('pdf-total-qty').innerText = totalLtr.toFixed(1) + " L";
+            document.getElementById('pdf-total-amount').innerText = "₹" + (totalLtr * rate).toFixed(2);
+            document.getElementById('pdf-date-range').innerText = "Generated: " + new Date().toLocaleDateString();
 
-            // 4. Generate PDF
             const element = document.getElementById('pdf-container');
-            element.style.display = 'block'; // Temporarily show for capture
+            element.style.display = 'block';
 
             const opt = {
-                margin: 0.5,
-                filename: selectedMember ? `Milk_${selectedMember}.pdf` : 'Milk_Report_Full.pdf',
+                margin: 0.3,
+                filename: `Invoice_${selectedMember}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none'; // Hide again
+                element.style.display = 'none';
             });
         }
 
