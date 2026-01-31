@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkLog Pro by Pankaj</title>
+    <title>MilkLog Pro | By Pankaj</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -11,9 +11,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        /* Prevent browser zoom issues on number inputs */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { opacity: 1; height: 50px; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-24">
@@ -33,7 +30,7 @@
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tighter leading-none">MilkLog</h1>
-                <div id="sync-status" class="inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-blue-800 uppercase tracking-widest text-white">Syncing...</div>
+                <div id="sync-status" class="inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-blue-800 uppercase tracking-widest text-white text-[10px]">Syncing...</div>
             </div>
             <div class="flex gap-2">
                 <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Logs</button>
@@ -63,8 +60,8 @@
                     <input type="date" id="log-date" class="bg-slate-100 p-3 rounded-xl text-sm outline-none font-bold text-slate-700" required>
                 </div>
                 <div class="relative">
-                    <input type="number" id="log-qty" step="1" min="0" value="0" class="w-full bg-slate-50 p-6 rounded-2xl text-5xl font-black outline-none text-center border-2 border-slate-100 focus:border-blue-500" required>
-                    <span class="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black">PAV</span>
+                    <input type="number" id="log-qty" step="1" min="0" value="0" class="w-full bg-slate-50 p-3 rounded-2xl text-3xl font-black outline-none text-center border-2 border-slate-100 focus:border-blue-500" required>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-sm uppercase">PAV</span>
                 </div>
                 <button type="submit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl active:scale-95">Save Entry</button>
             </form>
@@ -88,37 +85,20 @@
             <p id="pdf-gen-date" style="margin: 0; font-size: 10pt; font-weight: bold;"></p>
         </div>
         <p style="margin: 0 0 15pt 0; font-size: 14pt;"><b>Customer:</b> <span id="pdf-member-name"></span></p>
-
-        <h3 style="font-size: 11pt; margin-bottom: 5pt; color: #1e40af; border-left: 3pt solid #1e40af; padding-left: 5pt;">SUMMARY</h3>
         <table style="width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 20pt; table-layout: fixed;">
             <thead style="background: #f1f5f9;">
-                <tr>
-                    <th style="padding: 6pt; border: 1pt solid #ccc; text-align: left;">Pav Qty</th>
-                    <th style="padding: 6pt; border: 1pt solid #ccc; text-align: center;">Days</th>
-                    <th style="padding: 6pt; border: 1pt solid #ccc; text-align: right;">Total Pav</th>
-                </tr>
+                <tr><th style="padding: 6pt; border: 1pt solid #ccc; text-align: left;">Pav Qty</th><th style="padding: 6pt; border: 1pt solid #ccc; text-align: center;">Days</th><th style="padding: 6pt; border: 1pt solid #ccc; text-align: right;">Total Pav</th></tr>
             </thead>
             <tbody id="pdf-group-body"></tbody>
         </table>
-
-        <h3 style="font-size: 11pt; margin-bottom: 5pt; color: #1e40af; border-left: 3pt solid #1e40af; padding-left: 5pt;">DAILY DETAILS</h3>
         <table style="width: 100%; border-collapse: collapse; font-size: 9pt; table-layout: fixed;">
             <thead style="background: #f1f5f9;">
-                <tr>
-                    <th style="padding: 5pt; border: 1pt solid #ccc; text-align: left;">Date (DD-MM-YYYY)</th>
-                    <th style="padding: 5pt; border: 1pt solid #ccc; text-align: right;">Quantity</th>
-                </tr>
+                <tr><th style="padding: 5pt; border: 1pt solid #ccc; text-align: left;">Date</th><th style="padding: 5pt; border: 1pt solid #ccc; text-align: right;">Quantity</th></tr>
             </thead>
             <tbody id="pdf-table-body"></tbody>
             <tfoot>
-                <tr style="font-weight: bold; font-size: 12pt;">
-                    <td style="padding: 8pt; border: 1pt solid #ccc; text-align: right;">GRAND TOTAL PAV:</td>
-                    <td id="pdf-total-qty" style="padding: 8pt; border: 1pt solid #ccc; text-align: right;"></td>
-                </tr>
-                <tr style="font-weight: bold; background: #1e40af; color: white; font-size: 14pt;">
-                    <td style="padding: 10pt; border: 1pt solid #1e40af; text-align: right;">TOTAL AMOUNT:</td>
-                    <td id="pdf-total-amount" style="padding: 10pt; border: 1pt solid #1e40af; text-align: right;"></td>
-                </tr>
+                <tr style="font-weight: bold; font-size: 12pt;"><td style="padding: 8pt; border: 1pt solid #ccc; text-align: right;">GRAND TOTAL PAV:</td><td id="pdf-total-qty" style="padding: 8pt; border: 1pt solid #ccc; text-align: right;"></td></tr>
+                <tr style="font-weight: bold; background: #1e40af; color: white; font-size: 14pt;"><td style="padding: 10pt; text-align: right;">TOTAL AMOUNT:</td><td id="pdf-total-amount" style="padding: 10pt; text-align: right;"></td></tr>
             </tfoot>
         </table>
     </div>
@@ -149,7 +129,7 @@
         
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        db.enablePersistence({synchronizeTabs: true}).catch(() => console.log("Offline Cache Active"));
+        db.enablePersistence({synchronizeTabs: true}).catch(() => console.log("Offline Mode Active"));
 
         let allLogs = [], allMembers = [];
         const formatDate = (d) => d.split('-').reverse().join('-');
@@ -164,17 +144,12 @@
                 allLogs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderLogsUI();
                 const status = document.getElementById('sync-status');
-                status.innerText = snap.metadata.fromCache ? "Offline" : "Cloud Active";
+                status.innerText = snap.metadata.fromCache ? "Offline" : "Online";
                 status.className = snap.metadata.fromCache ? "inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-orange-500 uppercase text-white" : "inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-emerald-500 uppercase text-white";
             });
         }
 
-        async function addMember(e) {
-            e.preventDefault();
-            db.collection("members").add({ name: document.getElementById('member-name').value });
-            e.target.reset();
-        }
-
+        async function addMember(e) { e.preventDefault(); db.collection("members").add({ name: document.getElementById('member-name').value }); e.target.reset(); }
         async function saveEntry(e) {
             e.preventDefault();
             const member = document.getElementById('log-member').value;
@@ -185,83 +160,42 @@
             db.collection("logs").add({ member, date, qty, created: Date.now() });
             document.getElementById('log-qty').value = 0;
         }
-
         async function deleteLog(id) { if(confirm("Delete log?")) db.collection("logs").doc(id).delete(); }
         async function deleteMember(id) { if(confirm("Delete member?")) db.collection("members").doc(id).delete(); }
-
-        function switchTab(tab) {
-            document.getElementById('tab-members').classList.toggle('hidden', tab !== 'members');
-            document.getElementById('tab-logs').classList.toggle('hidden', tab !== 'logs');
-        }
+        function switchTab(tab) { document.getElementById('tab-members').classList.toggle('hidden', tab !== 'members'); document.getElementById('tab-logs').classList.toggle('hidden', tab !== 'logs'); }
 
         function renderMembersUI() {
-            document.getElementById('members-list').innerHTML = allMembers.map(m => `
-                <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                    <span class="font-bold text-slate-700">${m.name}</span>
-                    <button onclick="deleteMember('${m.id}')" class="text-red-400 font-bold text-[10px]">DELETE</button>
-                </div>`).join('');
+            document.getElementById('members-list').innerHTML = allMembers.map(m => `<div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm"><span class="font-bold text-slate-700">${m.name}</span><button onclick="deleteMember('${m.id}')" class="text-red-400 font-bold text-[10px]">DELETE</button></div>`).join('');
             const opts = allMembers.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
             document.getElementById('log-member').innerHTML = '<option value="">Select Member</option>' + opts;
             document.getElementById('filter-member').innerHTML = '<option value="">Select Member</option>' + opts;
         }
 
         function renderLogsUI() {
-            document.getElementById('logs-display').innerHTML = allLogs.map(l => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
-                    <div>
-                        <p class="text-[9px] font-black text-slate-400 uppercase">${formatDate(l.date)} • ${l.member}</p>
-                        <p class="text-xl font-black text-slate-800">${l.qty} PAV</p>
-                    </div>
-                    <button onclick="deleteLog('${l.id}')" class="text-slate-200">✕</button>
-                </div>`).join('');
+            document.getElementById('logs-display').innerHTML = allLogs.map(l => `<div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center"><div><p class="text-[9px] font-black text-slate-400 uppercase">${formatDate(l.date)} • ${l.member}</p><p class="text-xl font-black text-slate-800">${l.qty} PAV</p></div><button onclick="deleteLog('${l.id}')" class="text-slate-200">✕</button></div>`).join('');
         }
 
-        // PDF FIX: FORCED A4 SCALING
         function exportToPDF() {
             const name = document.getElementById('filter-member').value;
             if (!name) return alert("Select member!");
-            const rate = prompt("Enter Rate per Pav", "15");
+            const rate = prompt("Enter Rate", "15");
             if (!rate) return;
-
             let userLogs = allLogs.filter(l => l.member === name).sort((a,b) => new Date(a.date) - new Date(b.date));
             const groups = {};
             userLogs.forEach(l => groups[l.qty] = (groups[l.qty] || 0) + 1);
-
             let groupHtml = '', totalQty = 0;
-            for (let qty in groups) {
-                groupHtml += `<tr><td style="padding:6pt; border:1pt solid #ccc;">${qty} Pav</td><td style="padding:6pt; border:1pt solid #ccc; text-align:center;">${groups[qty]} Days</td><td style="padding:6pt; border:1pt solid #ccc; text-align:right;">${qty * groups[qty]} Pav</td></tr>`;
-            }
-            let detailHtml = userLogs.map(l => { 
-                totalQty += l.qty; 
-                return `<tr><td style="padding:4pt 6pt; border:1pt solid #ccc;">${formatDate(l.date)}</td><td style="padding:4pt 6pt; border:1pt solid #ccc; text-align:right;">${l.qty} Pav</td></tr>`; 
-            }).join('');
-
+            for (let qty in groups) { groupHtml += `<tr><td style="padding:6pt; border:1pt solid #ccc;">${qty} Pav</td><td style="padding:6pt; border:1pt solid #ccc; text-align:center;">${groups[qty]} Days</td><td style="padding:6pt; border:1pt solid #ccc; text-align:right;">${qty * groups[qty]} Pav</td></tr>`; }
+            let detailHtml = userLogs.map(l => { totalQty += l.qty; return `<tr><td style="padding:4pt 6pt; border:1pt solid #ccc;">${formatDate(l.date)}</td><td style="padding:4pt 6pt; border:1pt solid #ccc; text-align:right;">${l.qty} Pav</td></tr>`; }).join('');
             document.getElementById('pdf-group-body').innerHTML = groupHtml;
             document.getElementById('pdf-table-body').innerHTML = detailHtml;
             document.getElementById('pdf-member-name').innerText = name;
             document.getElementById('pdf-total-qty').innerText = totalQty + " Pav";
             document.getElementById('pdf-total-amount').innerText = "₹" + (totalQty * rate).toFixed(2);
             document.getElementById('pdf-gen-date').innerText = "DATE: " + formatDate(new Date().toISOString().split('T')[0]);
-
             const el = document.getElementById('pdf-container');
             el.style.display = 'block';
-
-            const opt = {
-                margin: 0,
-                filename: `MilkBill_${name}.pdf`,
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { 
-                    scale: 3, 
-                    useCORS: true, 
-                    logging: false,
-                    width: 793 // Forced A4 Pixel Width at 96 DPI
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().from(el).set(opt).save().then(() => el.style.display = 'none');
+            html2pdf().from(el).set({ margin: 0, filename: `Bill_${name}.pdf`, html2canvas: { scale: 3, width: 793 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).save().then(() => el.style.display = 'none');
         }
-
         window.onload = initApp;
     </script>
 </body>
