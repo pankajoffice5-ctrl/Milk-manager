@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk Ledger | Smart Grouping</title>
+    <title>Milk Ledger | Firebase Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans pb-24">
 
     <header class="bg-blue-600 p-6 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black uppercase tracking-tighter">MilkLog Pro</h1>
+            <h1 class="text-xl font-black uppercase tracking-tighter">MilkLog Cloud</h1>
+            <div id="sync-status" class="text-[10px] bg-white/20 px-2 py-1 rounded">Offline Mode</div>
             <div class="flex gap-2">
                 <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Logs</button>
                 <button onclick="switchTab('members')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Members</button>
@@ -60,138 +64,158 @@
             <h1 style="margin: 0; font-size: 20px;">MILK BILL</h1>
             <p id="pdf-gen-date" style="margin: 0; font-size: 10px;"></p>
         </div>
-        
         <p style="margin: 0; font-weight: bold; font-size: 14px;">Customer: <span id="pdf-member-name"></span></p>
-
-        <h3 style="font-size: 12px; margin-top: 20px; text-decoration: underline;">Summary (Qty Grouping)</h3>
+        <h3 style="font-size: 12px; margin-top: 20px; text-decoration: underline;">Summary</h3>
         <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
-            <thead>
-                <tr style="background: #f1f5f9; border: 1px solid #000;">
-                    <th style="padding: 6px; border: 1px solid #000; text-align: left;">Milk Quantity</th>
-                    <th style="padding: 6px; border: 1px solid #000; text-align: center;">Total Days</th>
-                    <th style="padding: 6px; border: 1px solid #000; text-align: right;">Total Pav</th>
-                </tr>
-            </thead>
+            <thead><tr style="background:#f1f5f9; border:1px solid #000;"><th>Qty</th><th>Days</th><th>Total</th></tr></thead>
             <tbody id="pdf-group-body"></tbody>
         </table>
-
         <h3 style="font-size: 12px; margin-top: 10px; text-decoration: underline;">Daily Details</h3>
         <table style="width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed;">
-            <thead>
-                <tr style="background: #f1f5f9; border: 1px solid #000;">
-                    <th style="padding: 4px; border: 1px solid #000; text-align: left; width: 40%;">Date</th>
-                    <th style="padding: 4px; border: 1px solid #000; text-align: right; width: 60%;">Quantity (Pav)</th>
-                </tr>
-            </thead>
+            <thead><tr style="background:#f1f5f9; border:1px solid #000;"><th>Date</th><th>Quantity</th></tr></thead>
             <tbody id="pdf-table-body"></tbody>
             <tfoot>
-                <tr style="font-weight: bold;">
-                    <td style="padding: 8px; border: 1px solid #000;">GRAND TOTAL</td>
-                    <td id="pdf-total-qty" style="padding: 8px; border: 1px solid #000; text-align: right;"></td>
-                </tr>
-                <tr style="font-weight: bold; background: #fafafa;">
-                    <td style="padding: 8px; border: 1px solid #000;">TOTAL AMOUNT</td>
-                    <td id="pdf-total-amount" style="padding: 8px; border: 1px solid #000; text-align: right; font-size: 14px;"></td>
-                </tr>
+                <tr style="font-weight:bold;"><td border="1px solid #000">GRAND TOTAL</td><td id="pdf-total-qty" style="text-align:right;"></td></tr>
+                <tr style="font-weight:bold; background:#fafafa;"><td>TOTAL AMOUNT</td><td id="pdf-total-amount" style="text-align:right; font-size:14px;"></td></tr>
             </tfoot>
         </table>
     </div>
 
     <script>
+        // 1. FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyDhK2f6K0sWKfciCgjXGXeY382OKZMnGPk",
+            authDomain: "milk-9bb36.firebaseapp.com",
+            projectId: "milk-9bb36",
+            storageBucket: "milk-9bb36.firebasestorage.app",
+            messagingSenderId: "1037611184301",
+            appId: "1:1037611184301:web:adbac24f2186edfb9b5624",
+            measurementId: "G-C2LMRW6SDR"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ENABLE OFFLINE PERSISTENCE
+        db.enablePersistence().catch((err) => {
+            console.error("Persistence failed", err.code);
+        });
+
+        // Global State
+        let allLogs = [];
+        let allMembers = [];
+
+        // 2. DATA SYNCING (Real-time & Offline)
+        function initApp() {
+            document.getElementById('log-date').valueAsDate = new Date();
+
+            // Sync Members
+            db.collection("members").orderBy("name").onSnapshot((snapshot) => {
+                allMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderMembersUI();
+            });
+
+            // Sync Logs
+            db.collection("logs").orderBy("date", "desc").onSnapshot((snapshot) => {
+                allLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderLogsUI();
+                updateSyncStatus(snapshot.metadata.fromCache);
+            });
+        }
+
+        function updateSyncStatus(isCache) {
+            const statusEl = document.getElementById('sync-status');
+            statusEl.innerText = isCache ? "Saved Locally" : "Cloud Synced";
+            statusEl.className = isCache ? "text-[10px] bg-orange-500 px-2 py-1 rounded" : "text-[10px] bg-emerald-500 px-2 py-1 rounded";
+        }
+
+        // 3. ACTIONS
+        async function addMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('member-name').value;
+            await db.collection("members").add({ name: name });
+            e.target.reset();
+        }
+
+        async function deleteMember(id) {
+            if(confirm("Delete this member?")) await db.collection("members").doc(id).delete();
+        }
+
+        async function saveEntry(e) {
+            e.preventDefault();
+            const member = document.getElementById('log-member').value;
+            const date = document.getElementById('log-date').value;
+            const qty = parseFloat(document.getElementById('log-qty').value);
+
+            // Duplicate Check
+            const exists = allLogs.some(l => l.member === member && l.date === date);
+            if (exists) return alert("Entry already exists for this date!");
+
+            await db.collection("logs").add({ member, date, qty, timestamp: Date.now() });
+            e.target.reset();
+            document.getElementById('log-date').valueAsDate = new Date();
+        }
+
+        async function deleteLog(id) {
+            await db.collection("logs").doc(id).delete();
+        }
+
+        // 4. UI RENDERING
         const formatDate = (d) => d.split('-').reverse().join('-');
+
+        function renderMembersUI() {
+            document.getElementById('members-list').innerHTML = allMembers.map(m => `
+                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-slate-100 shadow-sm">
+                    <span class="font-bold text-slate-700">${m.name}</span>
+                    <button onclick="deleteMember('${m.id}')" class="text-red-500 font-bold text-xs uppercase">Delete</button>
+                </div>`).join('');
+            
+            const opts = allMembers.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+            document.getElementById('log-member').innerHTML = '<option value="">Member</option>' + opts;
+            document.getElementById('filter-member').innerHTML = '<option value="">Select Member</option>' + opts;
+        }
+
+        function renderLogsUI() {
+            document.getElementById('logs-display').innerHTML = allLogs.map(l => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">${formatDate(l.date)} • ${l.member}</p>
+                        <p class="text-lg font-black text-slate-800">${l.qty} Pav</p>
+                    </div>
+                    <button onclick="deleteLog('${l.id}')" class="text-slate-200">✕</button>
+                </div>`).join('');
+        }
 
         function switchTab(tab) {
             document.getElementById('tab-members').classList.toggle('hidden', tab !== 'members');
             document.getElementById('tab-logs').classList.toggle('hidden', tab !== 'logs');
         }
 
-        function addMember(e) {
-            e.preventDefault();
-            const members = JSON.parse(localStorage.getItem('milk_members') || '[]');
-            members.push({ id: Date.now(), name: document.getElementById('member-name').value });
-            localStorage.setItem('milk_members', JSON.stringify(members));
-            e.target.reset(); renderMembers();
-        }
-
-        function renderMembers() {
-            const members = JSON.parse(localStorage.getItem('milk_members') || '[]');
-            document.getElementById('members-list').innerHTML = members.map(m => `
-                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-slate-100 shadow-sm">
-                    <span class="font-bold text-slate-700">${m.name}</span>
-                    <button onclick="deleteMember(${m.id})" class="text-red-500 font-bold text-xs uppercase">Delete</button>
-                </div>`).join('');
-            const opts = members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
-            document.getElementById('log-member').innerHTML = '<option value="">Member</option>' + opts;
-            document.getElementById('filter-member').innerHTML = '<option value="">Select Member</option>' + opts;
-        }
-
-        function deleteMember(id) {
-            const m = JSON.parse(localStorage.getItem('milk_members') || '[]');
-            localStorage.setItem('milk_members', JSON.stringify(m.filter(x => x.id !== id)));
-            renderMembers();
-        }
-
-        function saveEntry(e) {
-            e.preventDefault();
-            const member = document.getElementById('log-member').value;
-            const date = document.getElementById('log-date').value;
-            const qty = parseFloat(document.getElementById('log-qty').value);
-            const logs = JSON.parse(localStorage.getItem('milk_logs') || '[]');
-            if (logs.some(l => l.member === member && l.date === date)) return alert("Date exists!");
-            logs.unshift({ id: Date.now(), member, date, qty });
-            localStorage.setItem('milk_logs', JSON.stringify(logs));
-            e.target.reset(); initApp();
-        }
-
-        function renderLogs() {
-            const logs = JSON.parse(localStorage.getItem('milk_logs') || '[]');
-            document.getElementById('logs-display').innerHTML = logs.map(l => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
-                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">${formatDate(l.date)} • ${l.member}</p>
-                    <p class="text-lg font-black text-slate-800">${l.qty} Pav</p></div>
-                    <button onclick="deleteLog(${l.id})" class="text-slate-200">✕</button>
-                </div>`).join('');
-        }
-
-        function deleteLog(id) {
-            const l = JSON.parse(localStorage.getItem('milk_logs') || '[]');
-            localStorage.setItem('milk_logs', JSON.stringify(l.filter(x => x.id !== id)));
-            renderLogs();
-        }
-
+        // 5. PDF EXPORT (Unchanged Logic)
         function exportToPDF() {
             const name = document.getElementById('filter-member').value;
             if (!name) return alert("Select Member");
             const rate = prompt("Enter Rate per Pav", "15");
             if (!rate) return;
 
-            let logs = JSON.parse(localStorage.getItem('milk_logs') || '[]').filter(l => l.member === name);
-            logs.sort((a,b) => new Date(a.date) - new Date(b.date));
+            let logs = allLogs.filter(l => l.member === name).sort((a,b) => new Date(a.date) - new Date(b.date));
 
-            // --- UNIQUE PAV LOGIC ---
-            const groups = {}; // { "2": count, "3": count }
-            logs.forEach(l => {
-                groups[l.qty] = (groups[l.qty] || 0) + 1;
-            });
+            const groups = {};
+            logs.forEach(l => groups[l.qty] = (groups[l.qty] || 0) + 1);
 
             let groupHtml = '';
             for (let qty in groups) {
-                groupHtml += `<tr>
-                    <td style="padding:6px; border:1px solid #000;">${qty} Pav</td>
-                    <td style="padding:6px; border:1px solid #000; text-align:center;">${groups[qty]} Days</td>
-                    <td style="padding:6px; border:1px solid #000; text-align:right;">${qty * groups[qty]} Pav</td>
-                </tr>`;
+                groupHtml += `<tr><td style="padding:6px; border:1px solid #000;">${qty} Pav</td><td style="padding:6px; border:1px solid #000; text-align:center;">${groups[qty]} Days</td><td style="padding:6px; border:1px solid #000; text-align:right;">${qty * groups[qty]} Pav</td></tr>`;
             }
-            document.getElementById('pdf-group-body').innerHTML = groupHtml;
-
-            // --- DAILY DETAIL LOGIC ---
+            
             let totalQty = 0;
             let detailHtml = logs.map(l => {
                 totalQty += l.qty;
-                return `<tr><td style="padding:4px; border:1px solid #000;">${formatDate(l.date)}</td>
-                        <td style="padding:4px; border:1px solid #000; text-align:right;">${l.qty} Pav</td></tr>`;
+                return `<tr><td style="padding:4px; border:1px solid #000;">${formatDate(l.date)}</td><td style="padding:4px; border:1px solid #000; text-align:right;">${l.qty} Pav</td></tr>`;
             }).join('');
 
+            document.getElementById('pdf-group-body').innerHTML = groupHtml;
             document.getElementById('pdf-table-body').innerHTML = detailHtml;
             document.getElementById('pdf-member-name').innerText = name;
             document.getElementById('pdf-total-qty').innerText = totalQty.toFixed(1) + " Pav";
@@ -203,7 +227,6 @@
             html2pdf().from(el).set({ margin:0.5, filename:`${name}_Bill.pdf`, html2canvas:{scale:3}, jsPDF:{unit:'in', format:'a4'} }).save().then(()=>el.style.display='none');
         }
 
-        function initApp() { renderMembers(); renderLogs(); document.getElementById('log-date').valueAsDate = new Date(); }
         window.onload = initApp;
     </script>
 </body>
