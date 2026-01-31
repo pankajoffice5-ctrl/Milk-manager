@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkLog Pro | Final Build</title>
+    <title>MilkLog Pro by Pankaj</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -11,6 +11,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* Prevent browser zoom issues on number inputs */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { opacity: 1; height: 50px; }
     </style>
@@ -23,8 +24,8 @@
             <p class="text-slate-400 text-[10px] mb-6 font-bold uppercase tracking-widest">Secure Cloud Access</p>
             <input type="password" id="pin-input" inputmode="numeric" maxlength="4" placeholder="••••" 
                    class="w-full bg-slate-100 p-4 rounded-2xl text-3xl font-black tracking-[0.5em] text-center outline-none border-2 border-transparent focus:border-blue-500 mb-4">
-            <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all active:scale-95">Unlock App</button>
-            <p id="login-error" class="text-red-500 text-xs mt-4 font-bold hidden">Incorrect PIN. Try again.</p>
+            <button onclick="checkPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all">Unlock App</button>
+            <p id="login-error" class="text-red-500 text-xs mt-4 font-bold hidden">Incorrect PIN.</p>
         </div>
     </div>
 
@@ -32,7 +33,7 @@
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-black uppercase tracking-tighter leading-none">MilkLog</h1>
-                <div id="sync-status" class="inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-blue-800 uppercase tracking-widest">Syncing...</div>
+                <div id="sync-status" class="inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-blue-800 uppercase tracking-widest text-white">Syncing...</div>
             </div>
             <div class="flex gap-2">
                 <button onclick="switchTab('logs')" class="text-xs font-bold bg-white/20 px-4 py-2 rounded-xl">Logs</button>
@@ -42,7 +43,7 @@
         </div>
     </header>
 
-    <main id="tab-members" class="hidden max-w-md mx-auto p-4 animate-in fade-in duration-300">
+    <main id="tab-members" class="hidden max-w-md mx-auto p-4">
         <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 mb-4">
             <form onsubmit="addMember(event)" class="flex gap-2">
                 <input type="text" id="member-name" placeholder="Member Name" class="flex-1 bg-slate-100 p-3 rounded-xl outline-none text-sm font-bold" required>
@@ -70,7 +71,7 @@
         </div>
 
         <div class="bg-emerald-50 rounded-3xl p-5 border border-emerald-200 space-y-3">
-            <p class="text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center">A4 One-Page Invoice</p>
+            <p class="text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center">A4 Precision Invoice</p>
             <div class="flex gap-2">
                 <select id="filter-member" class="flex-1 bg-white p-3 rounded-xl text-sm outline-none border border-emerald-200 font-bold">
                     <option value="">Select Member</option>
@@ -78,53 +79,51 @@
                 <button onclick="exportToPDF()" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold">PDF</button>
             </div>
         </div>
-
         <div id="logs-display" class="space-y-2"></div>
     </main>
 
-    <div id="pdf-container" style="display: none; width: 794px; padding: 40px; background: white; color: black; font-family: Arial, sans-serif;">
-        <div style="border-bottom: 3px solid #1e40af; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-            <h1 style="margin: 0; font-size: 24px; color: #1e40af;">MILK SUPPLY BILL</h1>
-            <p id="pdf-gen-date" style="margin: 0; font-size: 11px; font-weight: bold;"></p>
+    <div id="pdf-container" style="display: none; width: 595pt; padding: 30pt; background: white; color: black; font-family: Arial, sans-serif; box-sizing: border-box;">
+        <div style="border-bottom: 2pt solid #1e40af; padding-bottom: 10pt; margin-bottom: 15pt; display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="margin: 0; font-size: 20pt; color: #1e40af;">MILK SUPPLY BILL</h1>
+            <p id="pdf-gen-date" style="margin: 0; font-size: 10pt; font-weight: bold;"></p>
         </div>
-        <p style="margin: 0 0 20px 0; font-size: 16px;"><b>Customer:</b> <span id="pdf-member-name"></span></p>
+        <p style="margin: 0 0 15pt 0; font-size: 14pt;"><b>Customer:</b> <span id="pdf-member-name"></span></p>
 
-        <h3 style="font-size: 13px; margin-bottom: 5px; color: #1e40af;">SUMMARY</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
+        <h3 style="font-size: 11pt; margin-bottom: 5pt; color: #1e40af; border-left: 3pt solid #1e40af; padding-left: 5pt;">SUMMARY</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 20pt; table-layout: fixed;">
             <thead style="background: #f1f5f9;">
                 <tr>
-                    <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Pav Qty</th>
-                    <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Days</th>
-                    <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Total</th>
+                    <th style="padding: 6pt; border: 1pt solid #ccc; text-align: left;">Pav Qty</th>
+                    <th style="padding: 6pt; border: 1pt solid #ccc; text-align: center;">Days</th>
+                    <th style="padding: 6pt; border: 1pt solid #ccc; text-align: right;">Total Pav</th>
                 </tr>
             </thead>
             <tbody id="pdf-group-body"></tbody>
         </table>
 
-        <h3 style="font-size: 13px; margin-bottom: 5px; color: #1e40af;">DAILY DETAILS</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <h3 style="font-size: 11pt; margin-bottom: 5pt; color: #1e40af; border-left: 3pt solid #1e40af; padding-left: 5pt;">DAILY DETAILS</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9pt; table-layout: fixed;">
             <thead style="background: #f1f5f9;">
                 <tr>
-                    <th style="padding: 6px; border: 1px solid #ddd; text-align: left;">Date</th>
-                    <th style="padding: 6px; border: 1px solid #ddd; text-align: right;">Pav</th>
+                    <th style="padding: 5pt; border: 1pt solid #ccc; text-align: left;">Date (DD-MM-YYYY)</th>
+                    <th style="padding: 5pt; border: 1pt solid #ccc; text-align: right;">Quantity</th>
                 </tr>
             </thead>
             <tbody id="pdf-table-body"></tbody>
             <tfoot>
-                <tr style="font-weight: bold; font-size: 14px;">
-                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">GRAND TOTAL PAV:</td>
-                    <td id="pdf-total-qty" style="padding: 10px; border: 1px solid #ddd; text-align: right;"></td>
+                <tr style="font-weight: bold; font-size: 12pt;">
+                    <td style="padding: 8pt; border: 1pt solid #ccc; text-align: right;">GRAND TOTAL PAV:</td>
+                    <td id="pdf-total-qty" style="padding: 8pt; border: 1pt solid #ccc; text-align: right;"></td>
                 </tr>
-                <tr style="font-weight: bold; background: #1e40af; color: white; font-size: 18px;">
-                    <td style="padding: 10px; border: 1px solid #1e40af; text-align: right;">TOTAL AMOUNT:</td>
-                    <td id="pdf-total-amount" style="padding: 10px; border: 1px solid #1e40af; text-align: right;"></td>
+                <tr style="font-weight: bold; background: #1e40af; color: white; font-size: 14pt;">
+                    <td style="padding: 10pt; border: 1pt solid #1e40af; text-align: right;">TOTAL AMOUNT:</td>
+                    <td id="pdf-total-amount" style="padding: 10pt; border: 1pt solid #1e40af; text-align: right;"></td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
     <script>
-        // 1. PIN SECURITY
         function checkPin() {
             const input = document.getElementById('pin-input');
             if (input.value === "8520") {
@@ -138,7 +137,6 @@
         function logout() { sessionStorage.removeItem('milkAuth'); location.reload(); }
         if (sessionStorage.getItem('milkAuth') === 'true') document.getElementById('login-screen').style.display = 'none';
 
-        // 2. FIREBASE INITIALIZATION
         const firebaseConfig = {
             apiKey: "AIzaSyDhK2f6K0sWKfciCgjXGXeY382OKZMnGPk",
             authDomain: "milk-9bb36.firebaseapp.com",
@@ -148,54 +146,48 @@
             appId: "1:1037611184301:web:adbac24f2186edfb9b5624",
             measurementId: "G-C2LMRW6SDR"
         };
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        db.enablePersistence().catch(err => console.error("Persistence failed"));
+        db.enablePersistence({synchronizeTabs: true}).catch(() => console.log("Offline Cache Active"));
 
         let allLogs = [], allMembers = [];
         const formatDate = (d) => d.split('-').reverse().join('-');
 
-        // 3. APP LOGIC
         function initApp() {
             document.getElementById('log-date').valueAsDate = new Date();
-            document.getElementById('pin-input').addEventListener('keypress', (e) => { if(e.key==='Enter') checkPin(); });
-
             db.collection("members").orderBy("name").onSnapshot(snap => {
                 allMembers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderMembersUI();
             });
-
             db.collection("logs").orderBy("date", "desc").onSnapshot(snap => {
                 allLogs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderLogsUI();
                 const status = document.getElementById('sync-status');
-                status.innerText = snap.metadata.fromCache ? "Offline Mode" : "Cloud Active";
-                status.className = snap.metadata.fromCache ? "inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-orange-500 uppercase tracking-widest" : "inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-emerald-500 uppercase tracking-widest";
+                status.innerText = snap.metadata.fromCache ? "Offline" : "Cloud Active";
+                status.className = snap.metadata.fromCache ? "inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-orange-500 uppercase text-white" : "inline-block text-[8px] font-bold px-1.5 py-0.5 rounded mt-1 bg-emerald-500 uppercase text-white";
             });
         }
 
         async function addMember(e) {
             e.preventDefault();
-            await db.collection("members").add({ name: document.getElementById('member-name').value });
+            db.collection("members").add({ name: document.getElementById('member-name').value });
             e.target.reset();
         }
-
-        async function deleteMember(id) { if(confirm("Delete member?")) await db.collection("members").doc(id).delete(); }
 
         async function saveEntry(e) {
             e.preventDefault();
             const member = document.getElementById('log-member').value;
             const date = document.getElementById('log-date').value;
             const qty = parseInt(document.getElementById('log-qty').value);
-
-            if (qty <= 0) return alert("Quantity must be greater than 0!");
-            if (allLogs.some(l => l.member === member && l.date === date)) return alert("Duplicate entry for this date!");
-
-            await db.collection("logs").add({ member, date, qty, created: Date.now() });
+            if (qty <= 0) return alert("Qty must be > 0");
+            if (allLogs.some(l => l.member === member && l.date === date)) return alert("Duplicate Date!");
+            db.collection("logs").add({ member, date, qty, created: Date.now() });
             document.getElementById('log-qty').value = 0;
         }
 
-        async function deleteLog(id) { await db.collection("logs").doc(id).delete(); }
+        async function deleteLog(id) { if(confirm("Delete log?")) db.collection("logs").doc(id).delete(); }
+        async function deleteMember(id) { if(confirm("Delete member?")) db.collection("members").doc(id).delete(); }
 
         function switchTab(tab) {
             document.getElementById('tab-members').classList.toggle('hidden', tab !== 'members');
@@ -204,9 +196,9 @@
 
         function renderMembersUI() {
             document.getElementById('members-list').innerHTML = allMembers.map(m => `
-                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-slate-100 shadow-sm">
+                <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm">
                     <span class="font-bold text-slate-700">${m.name}</span>
-                    <button onclick="deleteMember('${m.id}')" class="text-red-400 font-bold text-[10px] uppercase">Delete</button>
+                    <button onclick="deleteMember('${m.id}')" class="text-red-400 font-bold text-[10px]">DELETE</button>
                 </div>`).join('');
             const opts = allMembers.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
             document.getElementById('log-member').innerHTML = '<option value="">Select Member</option>' + opts;
@@ -215,7 +207,7 @@
 
         function renderLogsUI() {
             document.getElementById('logs-display').innerHTML = allLogs.map(l => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
                     <div>
                         <p class="text-[9px] font-black text-slate-400 uppercase">${formatDate(l.date)} • ${l.member}</p>
                         <p class="text-xl font-black text-slate-800">${l.qty} PAV</p>
@@ -224,7 +216,7 @@
                 </div>`).join('');
         }
 
-        // 4. A4 SINGLE PAGE PDF LOGIC
+        // PDF FIX: FORCED A4 SCALING
         function exportToPDF() {
             const name = document.getElementById('filter-member').value;
             if (!name) return alert("Select member!");
@@ -237,11 +229,11 @@
 
             let groupHtml = '', totalQty = 0;
             for (let qty in groups) {
-                groupHtml += `<tr><td style="padding:8px; border:1px solid #ddd;">${qty} Pav</td><td style="padding:8px; border:1px solid #ddd; text-align:center;">${groups[qty]} Days</td><td style="padding:8px; border:1px solid #ddd; text-align:right;">${qty * groups[qty]} Pav</td></tr>`;
+                groupHtml += `<tr><td style="padding:6pt; border:1pt solid #ccc;">${qty} Pav</td><td style="padding:6pt; border:1pt solid #ccc; text-align:center;">${groups[qty]} Days</td><td style="padding:6pt; border:1pt solid #ccc; text-align:right;">${qty * groups[qty]} Pav</td></tr>`;
             }
             let detailHtml = userLogs.map(l => { 
                 totalQty += l.qty; 
-                return `<tr><td style="padding:4px 8px; border:1px solid #ddd;">${formatDate(l.date)}</td><td style="padding:4px 8px; border:1px solid #ddd; text-align:right;">${l.qty} Pav</td></tr>`; 
+                return `<tr><td style="padding:4pt 6pt; border:1pt solid #ccc;">${formatDate(l.date)}</td><td style="padding:4pt 6pt; border:1pt solid #ccc; text-align:right;">${l.qty} Pav</td></tr>`; 
             }).join('');
 
             document.getElementById('pdf-group-body').innerHTML = groupHtml;
@@ -254,13 +246,20 @@
             const el = document.getElementById('pdf-container');
             el.style.display = 'block';
 
-            html2pdf().from(el).set({
-                margin: 0.3,
-                filename: `Bill_${name}.pdf`,
+            const opt = {
+                margin: 0,
+                filename: `MilkBill_${name}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 2, width: 794 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            }).save().then(() => el.style.display = 'none');
+                html2canvas: { 
+                    scale: 3, 
+                    useCORS: true, 
+                    logging: false,
+                    width: 793 // Forced A4 Pixel Width at 96 DPI
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(el).set(opt).save().then(() => el.style.display = 'none');
         }
 
         window.onload = initApp;
